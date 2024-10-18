@@ -63,4 +63,5 @@ describe('ModalRatesComponent', () => {
     component.setFieldValue('newRateValue', 0.8);
     expect(component.newRateValue).toBe(0.8);
   });
+  
 });
