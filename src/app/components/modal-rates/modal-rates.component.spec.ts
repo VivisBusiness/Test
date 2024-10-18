@@ -60,7 +60,6 @@ describe('ModalRatesComponent', () => {
   it('should set the field value correctly', () => {
     component.setFieldValue('newRateCode', 'GBP');
     expect(component.newRateCode).toBe('GBP');
-  
     component.setFieldValue('newRateValue', 0.8);
     expect(component.newRateValue).toBe(0.8);
   });
