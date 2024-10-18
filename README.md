@@ -29,3 +29,6 @@ Run tests and generate a code coverage report using the following command "ng te
 ## Further help
 
 To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+
+## Additional Information
+For more detailed information and documentation about the project, please refer to the [Wiki](https://github.com/VivisBusiness/Test/wiki).
