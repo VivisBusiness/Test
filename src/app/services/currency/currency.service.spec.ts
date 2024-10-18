@@ -1,19 +1,29 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
-import { CurrencyService, ApiRates, Rate } from './currency.service';
+import { CurrencyService } from './currency.service';
+import { LocalStorageService } from '../local-storage/local-storage.service';
+import { Rate } from '../../../models/rates.model';
+import { ApiRates } from '../../../models/api-rates.model';
 
 describe('CurrencyService', () => {
   let service: CurrencyService;
   let httpMock: HttpTestingController;
+  let localStorageService: jasmine.SpyObj<LocalStorageService>;
 
   beforeEach(() => {
+    const localStorageSpy = jasmine.createSpyObj('LocalStorageService', ['getItem', 'setItem', 'removeItem']);
+
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
-      providers: [CurrencyService],
+      providers: [
+        CurrencyService,
+        { provide: LocalStorageService, useValue: localStorageSpy }
+      ]
     });
 
     service = TestBed.inject(CurrencyService);
     httpMock = TestBed.inject(HttpTestingController);
+    localStorageService = TestBed.inject(LocalStorageService) as jasmine.SpyObj<LocalStorageService>;
   });
 
   afterEach(() => {
@@ -24,52 +34,134 @@ describe('CurrencyService', () => {
     expect(service).toBeTruthy();
   });
 
-  it('should get rates from the API', () => {
-    const dummyRates: ApiRates = { rates: { USD: 1, EUR: 0.85 } };
+  describe('getRates', () => {
+    it('should return rates on success', () => {
+      const mockRates: ApiRates = {
+        rates: {
+          USD: 1.0,
+          EUR: 0.85,
+          JPY: 110.0
+        }
+      };
 
-    service.getRates().subscribe(rates => {
-      expect(rates).toEqual(dummyRates);
+      service.getRates().subscribe(rates => {
+        expect(rates).toEqual(mockRates);
+      });
+
+      const req = httpMock.expectOne(service['apiUrl']);
+      expect(req.request.method).toBe('GET');
+      req.flush(mockRates);
     });
 
-    const req = httpMock.expectOne(service.apiUrl);
-    expect(req.request.method).toBe('GET');
-    req.flush(dummyRates);
+    it('should return null on error', () => {
+      service.getRates().subscribe(rates => {
+        expect(rates).toBeNull();
+      });
+
+      const req = httpMock.expectOne(service['apiUrl']);
+      req.error(new ErrorEvent('Network error'));
+    });
   });
 
-  it('should handle error when getting rates', () => {
-    service.getRates().subscribe(rates => {
+  describe('Local Rates management', () => {
+    it('should load local rates from storage', () => {
+      const mockRates: Rate[] = [{ code: 'USD', value: 1.0 }];
+      localStorageService.getItem.and.returnValue(mockRates);
+
+      service['loadLocalRates']();
+
+      expect(service.getLocalRates()).toEqual(mockRates);
+    });
+
+    it('should add a new rate', () => {
+      const rate: Rate = { code: 'USD', value: 1.0 };
+      localStorageService.getItem.and.returnValue([]);
+
+      service.addRate(rate);
+
+      expect(service.getLocalRates()).toContain(rate);
+      expect(localStorageService.setItem).toHaveBeenCalledWith('localRates', [rate]);
+    });
+
+    it('should delete a rate', () => {
+      const rate: Rate = { code: 'USD', value: 1.0 };
+      localStorageService.getItem.and.returnValue([rate]);
+
+      service.deleteRate('USD');
+
+      expect(service.getLocalRates()).not.toContain(rate);
+      expect(localStorageService.setItem).toHaveBeenCalledWith('localRates', []);
+    });
+
+    it('should update a rate', () => {
+      const rate: Rate = { code: 'USD', value: 1.0 };
+      localStorageService.getItem.and.returnValue([rate]);
+
+      service.updateRate('USD', 1.5);
+
+      expect(service.getLocalRates()[0].value).toBe(1.5);
+      expect(localStorageService.setItem).toHaveBeenCalledWith('localRates', [service.getLocalRates()[0]]);
+    });
+
+    it('should reset local rates', () => {
+      localStorageService.getItem.and.returnValue([{ code: 'USD', value: 1.0 }]);
+
+      service.resetLocalRates();
+
+      expect(service.getLocalRates()).toEqual([]);
+      expect(localStorageService.removeItem).toHaveBeenCalledWith('localRates');
+    });
+  });
+
+  describe('setApiRates y getApiRates', () => {
+    it('should set api rates in local storage', () => {
+      const mockRates: ApiRates = {
+        rates: {
+          USD: 1.0,
+          EUR: 0.85,
+          JPY: 110.0
+        }
+      };
+
+      service.setApiRates(mockRates);
+
+      expect(localStorageService.setItem).toHaveBeenCalledWith('apiRates', mockRates);
+    });
+
+    it('should get api rates from local storage', () => {
+      const mockRates: ApiRates = {
+        rates: {
+          USD: 1.0,
+          EUR: 0.85,
+          JPY: 110.0
+        }
+      };
+
+      localStorageService.getItem.and.returnValue(mockRates);
+
+      const rates = service.getApiRates();
+
+      expect(rates).toEqual(mockRates);
+    });
+
+    it('should return null if api rates are not found in local storage', () => {
+      localStorageService.getItem.and.returnValue(null);
+
+      const rates = service.getApiRates();
+
       expect(rates).toBeNull();
     });
 
-    const req = httpMock.expectOne(service.apiUrl);
-    req.error(new ErrorEvent('Network error'));
-  });
+    it('should not update if the rate code does not exist', () => {
+      service.localRates = [
+        { code: 'rate1', value: 100 },
+        { code: 'rate2', value: 200 },
+      ];
 
-  it('should set and get API rates', () => {
-    const rates: ApiRates = { rates: { USD: 1, EUR: 0.85 } };
-    service.setApiRates(rates);
-    expect(service.getApiRates()).toEqual(rates);
-  });
+      service.updateRate('rate3', 150);
 
-  it('should manage local rates', () => {
-    const rate: Rate = { code: 'EUR', value: 0.85 };
-    
-    service.addRate(rate);
-    expect(service.getLocalRates()).toContain(rate);
-
-    service.updateRate('EUR', 0.90);
-    expect(service.getLocalRates().find(r => r.code === 'EUR')?.value).toBe(0.90);
-
-    service.deleteRate('EUR');
-    expect(service.getLocalRates()).not.toContain(rate);
-  });
-
-  it('should reset local rates', () => {
-    const rate: Rate = { code: 'EUR', value: 0.85 };
-    service.addRate(rate);
-    expect(service.getLocalRates()).toContain(rate);
-
-    service.resetLocalRates();
-    expect(service.getLocalRates()).toEqual([]);
+      const rate1 = service.localRates.find(rate => rate.code === 'rate1');
+      expect(rate1!.value).toBe(100);
+    });
   });
 });
