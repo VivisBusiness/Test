@@ -8,7 +8,7 @@ describe('CurrencyService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule], // Importar el módulo de pruebas
+      imports: [HttpClientTestingModule],
       providers: [CurrencyService],
     });
 
@@ -17,7 +17,7 @@ describe('CurrencyService', () => {
   });
 
   afterEach(() => {
-    httpMock.verify(); // Verifica que no haya peticiones pendientes
+    httpMock.verify();
   });
 
   it('should be created', () => {
@@ -33,7 +33,7 @@ describe('CurrencyService', () => {
 
     const req = httpMock.expectOne(service.apiUrl);
     expect(req.request.method).toBe('GET');
-    req.flush(dummyRates); // Devuelve los datos simulados
+    req.flush(dummyRates);
   });
 
   it('should handle error when getting rates', () => {
@@ -42,7 +42,7 @@ describe('CurrencyService', () => {
     });
 
     const req = httpMock.expectOne(service.apiUrl);
-    req.error(new ErrorEvent('Network error')); // Simula un error de red
+    req.error(new ErrorEvent('Network error'));
   });
 
   it('should set and get API rates', () => {

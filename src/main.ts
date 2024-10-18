@@ -7,7 +7,7 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
 
 bootstrapApplication(AppComponent, {
   providers: [
-    provideHttpClient(), // Proporciona el HttpClient
+    provideHttpClient(),
     FormsModule,
     MatTableModule,
     provideAnimationsAsync(), provideAnimationsAsync(),

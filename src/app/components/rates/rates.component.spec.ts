@@ -21,12 +21,12 @@ describe('RatesComponent', () => {
     mockDialog = jasmine.createSpyObj('MatDialog', ['open']);
 
     await TestBed.configureTestingModule({
-      imports: [RatesComponent], // Importa el componente aquí
+      imports: [RatesComponent],
       providers: [
         { provide: CurrencyService, useValue: mockCurrencyService },
         { provide: MatDialog, useValue: mockDialog },
       ],
-      schemas: [NO_ERRORS_SCHEMA] // Esto evitará advertencias sobre elementos desconocidos
+      schemas: [NO_ERRORS_SCHEMA]
     }).compileComponents();
     
     fixture = TestBed.createComponent(RatesComponent);

@@ -17,7 +17,7 @@ describe('ModalRatesComponent', () => {
       imports: [FormsModule],
       providers: [
         { provide: MatDialogRef, useValue: mockDialogRef },
-        { provide: MAT_DIALOG_DATA, useValue: {} }, // Proveer datos iniciales vacíos
+        { provide: MAT_DIALOG_DATA, useValue: {} },
       ],
     }).compileComponents();
   });
@@ -36,7 +36,6 @@ describe('ModalRatesComponent', () => {
     component = TestBed.createComponent(ModalRatesComponent).componentInstance;
     component.data = data;
 
-    // Asigna las propiedades
     component.newRateCode = component.data.code || '';
     component.newRateValue = component.data.value ?? null;
 
@@ -45,8 +44,8 @@ describe('ModalRatesComponent', () => {
   });
 
   it('should not close dialog with invalid data', () => {
-    component.newRateCode = ''; // Código vacío
-    component.newRateValue = null; // Valor nulo
+    component.newRateCode = '';
+    component.newRateValue = null;
 
     component.addOrUpdateRate();
 
