@@ -12,7 +12,7 @@ import { ApiRates } from '../../../models/api-rates.model';
 
 export class CurrencyService {
   private apiUrl = environment.apiUrlExchangerate;
-  private localRates: Rate[] = [];
+  public localRates: Rate[] = [];
 
   constructor(
     private http: HttpClient,
