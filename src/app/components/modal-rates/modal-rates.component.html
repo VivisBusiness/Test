@@ -1,0 +1,29 @@
+<div>
+  <h2 mat-dialog-title>{{ data.code ? 'Actualizar Tasa' : 'Agregar Tasa' }}</h2>
+
+  <mat-dialog-content>
+    <ng-container *ngFor="let field of formFields">
+      <mat-form-field appearance="fill">
+        <mat-label>{{ field.label }}</mat-label>
+        <input
+          matInput
+          [ngModel]="getFieldValue(field.property)"
+          (ngModelChange)="setFieldValue(field.property, $event)"
+          [type]="field.type"
+          required
+          [placeholder]="field.placeholder"
+        />
+      </mat-form-field>
+    </ng-container>
+  </mat-dialog-content>
+
+  <mat-dialog-actions>
+    <button mat-raised-button (click)="addOrUpdateRate()">
+      {{ data.code ? 'Actualizar' : 'Agregar' }}
+    </button>
+    
+    <button mat-button (click)="dialogRef.close()">
+      Cancelar
+    </button>
+  </mat-dialog-actions>
+</div>

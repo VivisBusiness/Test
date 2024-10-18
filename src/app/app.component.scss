@@ -1,0 +1,22 @@
+$padding-top: 20px;
+$content-width: 80%;
+$mobile-width: 100%;
+
+@mixin respond-to($breakpoint) {
+  @if $breakpoint == mobile {
+    @media (max-width: 768px) { @content; }
+  }
+}
+
+.main {
+  padding-top: $padding-top;
+
+  &__content {
+    width: $content-width;
+    margin: 0 auto;
+
+    @include respond-to(mobile) {
+      width: $mobile-width;
+    }
+  }
+}
